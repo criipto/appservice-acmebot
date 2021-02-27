@@ -1,3 +1,9 @@
+# Azure setup
+Create Function app and accompanying storage account
+
+# Deployment
+Use Zip-deploy from VS 2019.
+
 # App Service Acmebot
 
 ![Build](https://github.com/shibayan/appservice-acmebot/workflows/Build/badge.svg)
