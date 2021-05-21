@@ -22,7 +22,7 @@ namespace AppService.Acmebot.Internal
 
         public async Task<bool> ExistsFileAsync(string filePath)
         {
-            var request = new HttpRequestMessage(HttpMethod.Head, $"https://{_scmUrl}/api/vfs/site/{filePath}");
+            var request = new HttpRequestMessage(HttpMethod.Head, $"https://{_scmUrl}/api/vfs/site/wwwroot/{filePath}");
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", _basicAuth);
 
@@ -45,7 +45,7 @@ namespace AppService.Acmebot.Internal
 
         public Task WriteFileAsync(string filePath, string content)
         {
-            var request = new HttpRequestMessage(HttpMethod.Put, $"https://{_scmUrl}/api/vfs/site/{filePath}");
+            var request = new HttpRequestMessage(HttpMethod.Put, $"https://{_scmUrl}/api/vfs/site/wwwroot/{filePath}");
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", _basicAuth);
             request.Headers.IfMatch.Add(EntityTagHeaderValue.Any);
