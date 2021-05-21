@@ -123,6 +123,10 @@ namespace AppService.Acmebot.Functions
         [FunctionName(nameof(Http01Precondition))]
         public async Task Http01Precondition([ActivityTrigger] Site site)
         {
+            // Disabling this entirely, as serving static files from .well-known/acme-challenge is supported directly by the website.
+            // Also, the restart triggered by the code below is undesirable.
+            return;
+
             var config = await _webSiteManagementClient.WebApps.GetConfigurationAsync(site);
 
             // 既に .well-known が仮想アプリケーションとして追加されているか確認
@@ -522,6 +526,10 @@ namespace AppService.Acmebot.Functions
         [FunctionName(nameof(CleanupVirtualApplication))]
         public async Task CleanupVirtualApplication([ActivityTrigger] Site site)
         {
+            // Disabling this entirely, as serving static files from .well-known/acme-challenge is supported directly by the website.
+            // Also, the restart triggered by the code below is undesirable.
+            return;
+
             var config = await _webSiteManagementClient.WebApps.GetConfigurationAsync(site);
 
             // 既に .well-known が仮想アプリケーションとして追加されているか確認
