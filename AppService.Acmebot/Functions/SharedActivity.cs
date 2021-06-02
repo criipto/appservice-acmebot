@@ -121,50 +121,11 @@ namespace AppService.Acmebot.Functions
         }
 
         [FunctionName(nameof(Http01Precondition))]
-        public async Task Http01Precondition([ActivityTrigger] Site site)
+        public Task Http01Precondition([ActivityTrigger] Site site)
         {
             // Disabling this entirely, as serving static files from .well-known/acme-challenge is supported directly by the website.
             // Also, the restart triggered by the code below is undesirable.
-            return;
-
-            var config = await _webSiteManagementClient.WebApps.GetConfigurationAsync(site);
-
-            // 既に .well-known が仮想アプリケーションとして追加されているか確認
-            var virtualApplication = config.VirtualApplications.FirstOrDefault(x => x.VirtualPath == "/.well-known");
-
-            if (virtualApplication != null)
-            {
-                return;
-            }
-
-            // 発行プロファイルを取得
-            var credentials = await _webSiteManagementClient.WebApps.ListPublishingCredentialsAsync(site);
-
-            var kuduClient = _kuduClientFactory.CreateClient(site.ScmSiteUrl(), credentials.PublishingUserName, credentials.PublishingPassword);
-
-            try
-            {
-                // 特殊なファイルが存在する場合は web.config の作成を行わない
-                if (!await kuduClient.ExistsFileAsync(".well-known/configured"))
-                {
-                    // Answer 用ファイルを返すための Web.config を作成
-                    await kuduClient.WriteFileAsync(DefaultWebConfigPath, DefaultWebConfig);
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new PreconditionException($"Failed to access SCM site. Message: {ex.Message}");
-            }
-
-            // .well-known を仮想アプリケーションとして追加
-            config.VirtualApplications.Add(new VirtualApplication
-            {
-                VirtualPath = "/.well-known",
-                PhysicalPath = "site\\.well-known",
-                PreloadEnabled = false
-            });
-
-            await _webSiteManagementClient.WebApps.UpdateConfigurationAsync(site, config);
+            return Task.CompletedTask;
         }
 
         [FunctionName(nameof(Http01Authorization))]
@@ -524,26 +485,11 @@ namespace AppService.Acmebot.Functions
         }
 
         [FunctionName(nameof(CleanupVirtualApplication))]
-        public async Task CleanupVirtualApplication([ActivityTrigger] Site site)
+        public Task CleanupVirtualApplication([ActivityTrigger] Site site)
         {
             // Disabling this entirely, as serving static files from .well-known/acme-challenge is supported directly by the website.
             // Also, the restart triggered by the code below is undesirable.
-            return;
-
-            var config = await _webSiteManagementClient.WebApps.GetConfigurationAsync(site);
-
-            // 既に .well-known が仮想アプリケーションとして追加されているか確認
-            var virtualApplication = config.VirtualApplications.FirstOrDefault(x => x.VirtualPath == "/.well-known");
-
-            if (virtualApplication == null)
-            {
-                return;
-            }
-
-            // 作成した仮想アプリケーションを削除
-            config.VirtualApplications.Remove(virtualApplication);
-
-            await _webSiteManagementClient.WebApps.UpdateConfigurationAsync(site, config);
+            return Task.CompletedTask;
         }
 
         [FunctionName(nameof(DeleteCertificate))]
