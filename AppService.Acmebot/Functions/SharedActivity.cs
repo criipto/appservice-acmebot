@@ -464,7 +464,7 @@ namespace AppService.Acmebot.Functions
             // _options
             var Client = _webSiteManagementClient;
             var builder = new UriBuilder(_environment.ResourceManager);
-            var path = "subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{name}";
+            var path = "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{name}";
             path = path.Replace("{resourceGroupName}", System.Uri.EscapeDataString(site.ResourceGroup));
             path = path.Replace("{name}", System.Uri.EscapeDataString(site.Name));
             path = path.Replace("{subscriptionId}", System.Uri.EscapeDataString(Client.SubscriptionId));
