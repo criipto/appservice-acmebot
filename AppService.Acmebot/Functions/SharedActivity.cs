@@ -465,7 +465,7 @@ namespace AppService.Acmebot.Functions
         {
             var Client = _webSiteManagementClient;
             var builder = new UriBuilder(_environment.ResourceManager);
-            builder.Path = $"/subscriptions/{Client.SubscriptionId}/resourceGroups/{site.ResourceGroup}/providers/Microsoft.Web/sites/{site.Name}";;
+            builder.Path = $"/subscriptions/{Client.SubscriptionId}/resourceGroups/{site.ResourceGroup}/providers/Microsoft.Web/sites/{site.Name}";
             builder.Query = "?api-version={apiVersion}&skipDnsRegistration=true".Replace("{apiVersion}", Client.ApiVersion);
 
             var request = new HttpRequestMessage();
