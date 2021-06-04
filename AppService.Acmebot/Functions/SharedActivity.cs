@@ -29,6 +29,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 
+
 namespace AppService.Acmebot.Functions
 {
     public class SharedActivity : ISharedActivity
@@ -469,17 +470,16 @@ namespace AppService.Acmebot.Functions
             path = path.Replace("{name}", System.Uri.EscapeDataString(site.Name));
             path = path.Replace("{subscriptionId}", System.Uri.EscapeDataString(Client.SubscriptionId));
             builder.Path = path;
-            builder.Query = "?api-version={apiVersion}&skipDnsRegistration=true".Replace("{apiVersion}",  Client.ApiVersion);
+            builder.Query = "?api-version={apiVersion}&skipDnsRegistration=true".Replace("{apiVersion}", Client.ApiVersion);
 
             var request = new HttpRequestMessage();
             request.Method = new HttpMethod("PUT");
             request.RequestUri = builder.Uri;
 
-           
             var content = JsonConvert.SerializeObject(site, Client.SerializationSettings);
             request.Content = new StringContent(content, System.Text.Encoding.UTF8);
             request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            
+
             await _credentials.ProcessHttpRequestAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
 
             var response = await Client.HttpClient.SendAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
