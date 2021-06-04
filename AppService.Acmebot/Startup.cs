@@ -76,6 +76,9 @@ namespace AppService.Acmebot
                 var options = provider.GetRequiredService<IOptions<AcmebotOptions>>();
                 var environment = provider.GetRequiredService<AzureEnvironment>();
 
+                //var creds = new TokenCredentials(provider.GetRequiredService<ITokenProvider>());
+                //creds.ProcessHttpRequestAsync
+
                 return new WebSiteManagementClient(new Uri(environment.ResourceManager), new TokenCredentials(provider.GetRequiredService<ITokenProvider>()))
                 {
                     SubscriptionId = options.Value.SubscriptionId

@@ -26,6 +26,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Rest;
+using Newtonsoft.Json;
 
 namespace AppService.Acmebot.Functions
 {
@@ -35,7 +37,7 @@ namespace AppService.Acmebot.Functions
                               AcmeProtocolClientFactory acmeProtocolClientFactory, KuduClientFactory kuduClientFactory,
                               WebSiteManagementClient webSiteManagementClient, DnsManagementClient dnsManagementClient,
                               ResourceManagementClient resourceManagementClient, WebhookInvoker webhookInvoker, IOptions<AcmebotOptions> options,
-                              ILogger<SharedActivity> logger)
+                              ILogger<SharedActivity> logger, ITokenProvider tokenProvider)
         {
             _httpClientFactory = httpClientFactory;
             _environment = environment;
@@ -48,6 +50,7 @@ namespace AppService.Acmebot.Functions
             _webhookInvoker = webhookInvoker;
             _options = options.Value;
             _logger = logger;
+            _credentials = new TokenCredentials(tokenProvider);
         }
 
         private readonly IHttpClientFactory _httpClientFactory;
@@ -61,6 +64,7 @@ namespace AppService.Acmebot.Functions
         private readonly WebhookInvoker _webhookInvoker;
         private readonly AcmebotOptions _options;
         private readonly ILogger<SharedActivity> _logger;
+        private readonly TokenCredentials _credentials;
 
         private const string IssuerName = "Acmebot";
 
@@ -455,9 +459,35 @@ namespace AppService.Acmebot.Functions
         }
 
         [FunctionName(nameof(UpdateSiteBinding))]
-        public Task UpdateSiteBinding([ActivityTrigger] Site site)
+        public async Task UpdateSiteBinding([ActivityTrigger] Site site)
         {
-            return _webSiteManagementClient.WebApps.CreateOrUpdateAsync(site);
+            // _options
+            var Client = _webSiteManagementClient;
+            var builder = new UriBuilder(_environment.ResourceManager);
+            var path = "subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{name}";
+            path = path.Replace("{resourceGroupName}", System.Uri.EscapeDataString(site.ResourceGroup));
+            path = path.Replace("{name}", System.Uri.EscapeDataString(site.Name));
+            path = path.Replace("{subscriptionId}", System.Uri.EscapeDataString(Client.SubscriptionId));
+            builder.Path = path;
+            builder.Query = "?api-version={apiVersion}&skipDnsRegistration=true".Replace("{apiVersion}",  Client.ApiVersion);
+
+            var request = new HttpRequestMessage();
+            request.Method = new HttpMethod("PUT");
+            request.RequestUri = builder.Uri;
+
+           
+            var content = JsonConvert.SerializeObject(site, Client.SerializationSettings);
+            request.Content = new StringContent(content, System.Text.Encoding.UTF8);
+            request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            
+            await _credentials.ProcessHttpRequestAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
+
+            var response = await Client.HttpClient.SendAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
+            var statusCode = response.StatusCode;
+
+            if ((int)statusCode != 200 && (int)statusCode != 202) {
+                var ex = new DefaultErrorResponseException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
+            }
         }
 
         [FunctionName(nameof(CleanupDnsChallenge))]
