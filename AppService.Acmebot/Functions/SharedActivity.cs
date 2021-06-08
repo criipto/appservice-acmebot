@@ -479,7 +479,14 @@ namespace AppService.Acmebot.Functions
             request.Method = new HttpMethod("PUT");
             request.RequestUri = builder.Uri;
 
-            var content = JsonConvert.SerializeObject(site, Client.SerializationSettings);
+            var content = 
+                JsonConvert.SerializeObject(
+                    new {
+                        HostNames = site.HostNames,
+                        HostNameSslStates = site.HostNameSslStates
+                    },
+                    Client.SerializationSettings
+                );
             request.Content = new StringContent(content, System.Text.Encoding.UTF8);
             request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
 
