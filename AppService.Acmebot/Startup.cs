@@ -5,6 +5,9 @@ using AppService.Acmebot;
 using AppService.Acmebot.Internal;
 using AppService.Acmebot.Options;
 
+using Azure.Identity;
+using Azure.Security.KeyVault.Certificates;
+
 using DnsClient;
 
 using Microsoft.ApplicationInsights.Extensibility;
@@ -18,9 +21,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Rest;
-
-using Azure.Identity;
-using Azure.Security.KeyVault.Certificates;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -107,7 +107,7 @@ namespace AppService.Acmebot
                 };
             });
 
-             builder.Services.AddSingleton(provider =>
+            builder.Services.AddSingleton(provider =>
             {
                 var options = provider.GetRequiredService<IOptions<AcmebotOptions>>();
                 var environment = provider.GetRequiredService<AzureEnvironment>();
