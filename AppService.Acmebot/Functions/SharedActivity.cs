@@ -479,9 +479,10 @@ namespace AppService.Acmebot.Functions
             request.Method = new HttpMethod("PUT");
             request.RequestUri = builder.Uri;
 
-            var content = 
+            var content =
                 JsonConvert.SerializeObject(
-                    new {
+                    new
+                    {
                         HostNames = site.HostNames,
                         HostNameSslStates = site.HostNameSslStates
                     },
