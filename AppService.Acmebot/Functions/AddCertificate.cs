@@ -67,9 +67,8 @@ namespace AppService.Acmebot.Functions
                     hostNameSslState.Thumbprint = certificate.Thumbprint;
                     hostNameSslState.SslState = request.UseIpBasedSsl ?? false ? SslState.IpBasedEnabled : SslState.SniEnabled;
                     hostNameSslState.ToUpdate = true;
+                    await activity.UpdateHostNameSslState((site, hostNameSslState));
                 }
-
-                await activity.UpdateSiteBinding(site);
 
                 // 証明書の更新が完了後に Webhook を送信する
                 await activity.SendCompletedEvent((site, certificate.ExpirationDate, asciiDnsNames));

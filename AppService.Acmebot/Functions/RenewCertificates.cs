@@ -101,9 +101,8 @@ namespace AppService.Acmebot.Functions
                     {
                         hostNameSslState.Thumbprint = newCertificate.Thumbprint;
                         hostNameSslState.ToUpdate = true;
+                        await activity.UpdateHostNameSslState((site, hostNameSslState));
                     }
-
-                    await activity.UpdateSiteBinding(site);
 
                     // 証明書の更新が完了後に Webhook を送信する
                     await activity.SendCompletedEvent((site, newCertificate.ExpirationDate, dnsNames));

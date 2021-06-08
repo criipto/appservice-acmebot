@@ -50,7 +50,7 @@ namespace AppService.Acmebot.Functions
 
         Task<Certificate> UploadCertificate((Site, string, string, byte[], bool) input);
 
-        Task UpdateSiteBinding(Site site);
+        Task UpdateHostNameSslState((Site, HostNameSslState) input);
 
         Task CleanupVirtualApplication(Site site);
 

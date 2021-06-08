@@ -469,13 +469,14 @@ namespace AppService.Acmebot.Functions
             });
         }
 
-        [FunctionName(nameof(UpdateSiteBinding))]
-        public async Task UpdateSiteBinding([ActivityTrigger] Site site)
+        [FunctionName(nameof(UpdateHostNameSslState))]
+        public async Task UpdateHostNameSslState([ActivityTrigger] (Site, HostNameSslState) input)
         {
-            var Client = _webSiteManagementClient;
+            var (site, newState) = input;
+            var client = _webSiteManagementClient;
             var builder = new UriBuilder(_environment.ResourceManager);
-            builder.Path = $"/subscriptions/{Client.SubscriptionId}/resourceGroups/{site.ResourceGroup}/providers/Microsoft.Web/sites/{site.Name}";
-            builder.Query = $"?api-version={Client.ApiVersion}&skipDnsRegistration=true";
+            builder.Path = $"/subscriptions/{client.SubscriptionId}/resourceGroups/{site.ResourceGroup}/providers/Microsoft.Web/sites/{site.Name}/hostNameBindings/{newState.Name}";
+            builder.Query = $"?api-version={client.ApiVersion}&skipDnsRegistration=true";
 
             var request = new HttpRequestMessage();
             request.Method = new HttpMethod("PUT");
@@ -485,17 +486,17 @@ namespace AppService.Acmebot.Functions
                 JsonConvert.SerializeObject(
                     new
                     {
-                        HostNames = site.HostNames,
-                        HostNameSslStates = site.HostNameSslStates
+                        Location = site.Location,
+                        Properties = newState
                     },
-                    Client.SerializationSettings
+                    client.SerializationSettings
                 );
             request.Content = new StringContent(content, System.Text.Encoding.UTF8);
             request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
 
             await _credentials.ProcessHttpRequestAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
 
-            var response = await Client.HttpClient.SendAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
+            var response = await client.HttpClient.SendAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
             var statusCode = response.StatusCode;
 
             if ((int)statusCode != 200 && (int)statusCode != 202)
