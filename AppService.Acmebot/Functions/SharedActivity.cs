@@ -472,6 +472,7 @@ namespace AppService.Acmebot.Functions
         [FunctionName(nameof(UpdateHostNameSslState))]
         public async Task UpdateHostNameSslState([ActivityTrigger] (Site, HostNameSslState) input)
         {
+            // URL and payload gauged from the "Try" feature on https://docs.microsoft.com/en-us/rest/api/appservice/web-apps/create-or-update-host-name-binding
             var (site, newState) = input;
             var client = _webSiteManagementClient;
             var builder = new UriBuilder(_environment.ResourceManager);
@@ -486,8 +487,10 @@ namespace AppService.Acmebot.Functions
                 JsonConvert.SerializeObject(
                     new
                     {
-                        Location = site.Location,
-                        Properties = newState
+                        properties = new {
+                            sslState = "SniEnabled",
+                            thumbprint = newState.Thumbprint
+                        }
                     },
                     client.SerializationSettings
                 );
