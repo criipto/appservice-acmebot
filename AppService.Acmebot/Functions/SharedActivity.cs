@@ -28,6 +28,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Rest;
 
+using Azure.Security.KeyVault.Certificates;
+
 using Newtonsoft.Json;
 
 
@@ -39,7 +41,7 @@ namespace AppService.Acmebot.Functions
                               AcmeProtocolClientFactory acmeProtocolClientFactory, KuduClientFactory kuduClientFactory,
                               WebSiteManagementClient webSiteManagementClient, DnsManagementClient dnsManagementClient,
                               ResourceManagementClient resourceManagementClient, WebhookInvoker webhookInvoker, IOptions<AcmebotOptions> options,
-                              ILogger<SharedActivity> logger, ITokenProvider tokenProvider)
+                              ILogger<SharedActivity> logger, ITokenProvider tokenProvider, CertificateClient certificateClient)
         {
             _httpClientFactory = httpClientFactory;
             _environment = environment;
@@ -53,6 +55,7 @@ namespace AppService.Acmebot.Functions
             _options = options.Value;
             _logger = logger;
             _credentials = new TokenCredentials(tokenProvider);
+            _certificateClient = certificateClient;
         }
 
         private readonly IHttpClientFactory _httpClientFactory;
@@ -67,6 +70,7 @@ namespace AppService.Acmebot.Functions
         private readonly AcmebotOptions _options;
         private readonly ILogger<SharedActivity> _logger;
         private readonly TokenCredentials _credentials;
+        private readonly CertificateClient _certificateClient;
 
         private const string IssuerName = "Acmebot";
 
@@ -441,11 +445,14 @@ namespace AppService.Acmebot.Functions
         }
 
         [FunctionName(nameof(UploadCertificate))]
-        public Task<Certificate> UploadCertificate([ActivityTrigger] (Site, string, byte[], bool) input)
+        public async Task<Certificate> UploadCertificate([ActivityTrigger] (Site, string, string, byte[], bool) input)
         {
-            var (site, certificateName, pfxBlob, forceDns01Challenge) = input;
+            var (site, dnsName, thumbprint, pfxBlob, forceDns01Challenge) = input;
+            var certificateName = $"{dnsName}-{thumbprint}";
 
-            return _webSiteManagementClient.Certificates.CreateOrUpdateAsync(site.ResourceGroup, certificateName, new Certificate
+            await _certificateClient.ImportCertificateAsync(new ImportCertificateOptions(dnsName.Replace(".", "-"), pfxBlob));
+
+            return await _webSiteManagementClient.Certificates.CreateOrUpdateAsync(site.ResourceGroup, certificateName, new Certificate
             {
                 Location = site.Location,
                 Password = "P@ssw0rd",

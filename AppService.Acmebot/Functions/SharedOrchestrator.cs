@@ -79,7 +79,7 @@ namespace AppService.Acmebot.Functions
             // Order の最終処理を実行し PFX を作成
             var (thumbprint, pfxBlob) = await activity.FinalizeOrder((dnsNames, orderDetails));
 
-            var certificate = await activity.UploadCertificate((site, $"{dnsNames[0]}-{thumbprint}", pfxBlob, forceDns01Challenge));
+            var certificate = await activity.UploadCertificate((site, dnsNames[0], thumbprint, pfxBlob, forceDns01Challenge));
 
             return certificate;
         }

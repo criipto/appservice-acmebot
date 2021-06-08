@@ -13,6 +13,9 @@ namespace AppService.Acmebot.Options
         [Required]
         public string SubscriptionId { get; set; }
 
+        [Required]
+        public string VaultBaseUrl { get; set; }
+
         [Url]
         public string Webhook { get; set; }
 

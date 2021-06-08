@@ -48,7 +48,7 @@ namespace AppService.Acmebot.Functions
 
         Task<(string, byte[])> FinalizeOrder((IReadOnlyList<string>, OrderDetails) input);
 
-        Task<Certificate> UploadCertificate((Site, string, byte[], bool) input);
+        Task<Certificate> UploadCertificate((Site, string, string, byte[], bool) input);
 
         Task UpdateSiteBinding(Site site);
 

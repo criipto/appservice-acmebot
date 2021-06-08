@@ -25,6 +25,13 @@
       "metadata": {
         "description": "Certification authority ACME Endpoint."
       }
+    },
+    "keyVaultBaseUrl": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Enter the base URL of an existing Key Vault. (ex. https://example.vault.azure.net)"
+      }
     }
   },
   "variables": {
@@ -35,6 +42,7 @@
     "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "mailAddress": "[parameters('mailAddress')]",
     "acmeEndpoint": "[parameters('acmeEndpoint')]",
+    "vaultBaseUrl": "[parameters('keyVaultBaseUrl')]",
     "appInsightsEndpoints": {
       "AzureCloud": "applicationinsights.azure.com",
       "AzureChinaCloud": "applicationinsights.azure.cn",
@@ -138,6 +146,10 @@
             {
               "name": "Acmebot:Endpoint",
               "value": "[variables('acmeEndpoint')]"
+            },
+            {
+              "name": "Acmebot:VaultBaseUrl",
+              "value": "[variables('vaultBaseUrl')]"
             },
             {
               "name": "Acmebot:Environment",

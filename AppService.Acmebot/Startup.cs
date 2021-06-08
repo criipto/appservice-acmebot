@@ -19,6 +19,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Rest;
 
+using Azure.Identity;
+using Azure.Security.KeyVault.Certificates;
+
 [assembly: FunctionsStartup(typeof(Startup))]
 
 namespace AppService.Acmebot
@@ -102,6 +105,19 @@ namespace AppService.Acmebot
                 {
                     SubscriptionId = options.Value.SubscriptionId
                 };
+            });
+
+             builder.Services.AddSingleton(provider =>
+            {
+                var options = provider.GetRequiredService<IOptions<AcmebotOptions>>();
+                var environment = provider.GetRequiredService<AzureEnvironment>();
+
+                var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+                {
+                    AuthorityHost = new Uri(environment.ActiveDirectory)
+                });
+
+                return new CertificateClient(new Uri(options.Value.VaultBaseUrl), credential);
             });
 
             builder.Services.AddSingleton<AcmeProtocolClientFactory>();
