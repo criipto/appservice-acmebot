@@ -450,7 +450,9 @@ namespace AppService.Acmebot.Functions
             var (site, dnsName, thumbprint, pfxBlob, forceDns01Challenge) = input;
             var certificateName = $"{dnsName}-{thumbprint}";
 
-            await _certificateClient.ImportCertificateAsync(new ImportCertificateOptions(dnsName.Replace(".", "-"), pfxBlob));
+            var importCertOpts = new ImportCertificateOptions(dnsName.Replace(".", "-"), pfxBlob);
+            importCertOpts.Password = "P@ssw0rd";
+            await _certificateClient.ImportCertificateAsync(importCertOpts);
 
             return await _webSiteManagementClient.Certificates.CreateOrUpdateAsync(site.ResourceGroup, certificateName, new Certificate
             {
