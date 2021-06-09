@@ -488,12 +488,14 @@ namespace AppService.Acmebot.Functions
                     new
                     {
                         properties = new {
-                            sslState = "SniEnabled",
+                            sslState = "sniEnabled",
                             thumbprint = newState.Thumbprint
                         }
                     },
                     client.SerializationSettings
                 );
+
+            _logger.LogInformation($"PUT {builder.Uri}: {content} ");
             request.Content = new StringContent(content, System.Text.Encoding.UTF8);
             request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
 
