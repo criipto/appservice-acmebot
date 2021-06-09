@@ -500,11 +500,11 @@ namespace AppService.Acmebot.Functions
             await _credentials.ProcessHttpRequestAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
 
             var response = await client.HttpClient.SendAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
-            var statusCode = response.StatusCode;
 
-            if ((int)statusCode != 200 && (int)statusCode != 202)
+            if (!response.IsSuccessStatusCode)
             {
-                var ex = new DefaultErrorResponseException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
+                var msg = $"Operation returned an invalid status code '{response.StatusCode}'. URL: '{request.RequestUri.OriginalString}'. Payload: '{content}'";
+                throw new DefaultErrorResponseException(msg);
             }
         }
 
