@@ -491,8 +491,7 @@ namespace AppService.Acmebot.Functions
                             sslState = "sniEnabled",
                             thumbprint = newState.Thumbprint
                         }
-                    },
-                    client.SerializationSettings
+                    }
                 );
 
             _logger.LogInformation($"PUT {builder.Uri}: {content} ");
