@@ -495,7 +495,7 @@ namespace AppService.Acmebot.Functions
                     client.SerializationSettings
                 );
 
-            _logger.LogTrace($"PUT {builder.Uri}: {content} ");
+            _logger.LogInformation($"PUT {builder.Uri}: {content} ");
             request.Content = new StringContent(content, System.Text.Encoding.UTF8);
             request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
 

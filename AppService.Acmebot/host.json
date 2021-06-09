@@ -8,7 +8,7 @@
       }
     },
     "logLevel": {
-      "AppService.Acmebot": "Warning"
+      "AppService.Acmebot": "Information"
     }
   },
   "extensions": {
