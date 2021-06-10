@@ -454,19 +454,38 @@ namespace AppService.Acmebot.Functions
             importCertOpts.Password = "P@ssw0rd";
             await _certificateClient.ImportCertificateAsync(importCertOpts);
 
-            return await _webSiteManagementClient.Certificates.CreateOrUpdateAsync(site.ResourceGroup, certificateName, new Certificate
+            var builder = new UriBuilder(_environment.ResourceManager);
+            builder.Path = $"/subscriptions/{_webSiteManagementClient.SubscriptionId}/resourceGroups/{site.ResourceGroup}/providers/Microsoft.Web/certificates/{certificateName}";
+            builder.Query = $"?api-version=2019-08-01";
+
+            var request = new HttpRequestMessage();
+            request.Method = new HttpMethod("PUT");
+            request.RequestUri = builder.Uri;
+
+            var payload = new
+                    {
+                        location = site.Location,
+                        properties = new {
+                            pfxBlob = Convert.ToBase64String(pfxBlob),
+                            password = importCertOpts.Password
+                        }
+                    };
+            var content = JsonConvert.SerializeObject(payload);
+            _logger.LogInformation($"PUT {builder.Uri}: Payload length: {content.Length}");
+            request.Content = new StringContent(content, System.Text.Encoding.UTF8);
+            request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+
+            await _credentials.ProcessHttpRequestAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
+
+            var response = await _webSiteManagementClient.HttpClient.SendAsync(request, System.Threading.CancellationToken.None).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
             {
-                Location = site.Location,
-                Password = "P@ssw0rd",
-                PfxBlob = pfxBlob,
-                ServerFarmId = site.ServerFarmId,
-                Tags = new Dictionary<string, string>
-                {
-                    { "Issuer", IssuerName },
-                    { "Endpoint", _options.Endpoint },
-                    { "ForceDns01Challenge", forceDns01Challenge.ToString() }
-                }
-            });
+                var msg = $"Operation returned an invalid status code '{response.StatusCode}'. URL: '{request.RequestUri.OriginalString}'. Payload: '{content}'";
+                throw new DefaultErrorResponseException(msg);
+            }
+
+            return await _webSiteManagementClient.Certificates.GetAsync(site.ResourceGroup, certificateName);
         }
 
         [FunctionName(nameof(UpdateHostNameSslState))]
